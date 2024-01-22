@@ -1,1 +1,116 @@
+-- Create the "Classrooms" table
+CREATE TABLE Classrooms (
+    classroom_id SERIAL PRIMARY KEY,
+    classroom_name VARCHAR(50),
+    teacher_id INT
+);
 
+INSERT INTO Classrooms (classroom_name, teacher_id) VALUES
+    ('Class 1A', 101),
+    ('Class 2B', 102),
+    ('Class 3C', 103);
+	
+-- Create the "Students" table
+CREATE TABLE Students (
+    student_id SERIAL PRIMARY KEY,
+    first_name VARCHAR(50),
+    last_name VARCHAR(50),
+    classroom_id INT REFERENCES Classrooms(classroom_id),
+    grade INT,
+    age INT,  -- Added the "age" column
+    gender VARCHAR(10)
+);
+
+-- Add a new column named "Gender" to the "Students" table
+ALTER TABLE Students ADD COLUMN gender VARCHAR(10);
+
+-- Insert at least 5 records into the "Students" table
+INSERT INTO Students (first_name, last_name, classroom_id, grade, age, gender) VALUES
+    ('John', 'Doe', 1, 10, 17, 'Male'),  
+    ('Jane', 'Smith', 2, 11, 18, 'Female'),  
+    ('Bob', 'Johnson', 3, 3, 9, 'Male'),  
+    ('Alice', 'Williams', 1, 9, 16, 'Female'),  
+    ('Charlie', 'Brown', 2, 13, 9, 'Male');  
+
+-- Update the "Age" of students who are in the "Class" 10 to 16
+UPDATE Students SET age = grade + 1 WHERE grade BETWEEN 10 AND 16;
+
+-- Delete all records of students whose "Age" is less than 10
+DELETE FROM Students WHERE age < 10;
+
+
+-- Create the "teachers" table
+CREATE TABLE teachers (teacher_id SERIAL PRIMARY KEY, teacher_name VARCHAR(50));
+
+INSERT INTO teachers (teacher_name) VALUES
+    ('Mr. Smith'),
+    ('Mrs. Johnson'),
+    ('Dr. Anderson');
+
+
+-- Insert some sample data into the "Classrooms" table
+UPDATE Classrooms SET teacher_id = 1 WHERE classroom_id = 1;
+UPDATE Classrooms SET teacher_id = 2 WHERE classroom_id = 2;
+UPDATE Classrooms SET teacher_id = 3 WHERE classroom_id = 3;
+
+-- Find the names of students who belong to a classroom taught by a specific teacher (teacher_id = 1 in this example)
+SELECT st.first_name, st.last_name
+FROM Students st
+JOIN Classrooms cl 
+ON st.classroom_id = cl.classroom_id
+WHERE cl.teacher_id = 1;
+
+-- Find the names and the surnames and age of all students
+SELECT first_name, last_name, age FROM students;
+
+-- Find the avarage age of all students
+SELECT AVG (age) AS AvarageAge FROM students;
+
+-- The concept of a primary key and its significance:
+-- A primary key is a unique identifier for each record in a database table. 
+-- In the example of the "Students" table, the "student_id" column is defined as the primary key. 
+-- This means that each student in the table must have a unique "student_id" value, and no two students can share the same identifier.
+-- The primary key is crucial for maintaining data accuracy, enforcing uniqueness, and establishing relationships between tables in a relational database.
+
+-- Create the "Courses" table
+CREATE TABLE Courses (CourseID SERIAL PRIMARY KEY, CourseName VARCHAR(50));
+
+-- Insert some sample data into the "Courses" table
+INSERT INTO Courses (CourseName) VALUES
+            ('Mathematics'),
+            ('English'),
+            ('Science');
+
+-- Add a foreign key constraint in the "Students" table referencing the "CourseID" in the "Courses" table
+ALTER TABLE Students ADD COLUMN CourseID INT REFERENCES Courses(CourseID);
+
+-- List all students with their respective classrooms and teacher names.
+SELECT s.student_id, s.first_name, s.last_name, c.classroom_name, t.teacher_name
+FROM Students s
+JOIN Classrooms c ON s.classroom_id = c.classroom_id
+JOIN teachers t ON c.teacher_id = t.teacher_id;
+
+-- Show the average grade for each classroom. Display the classroom name and the average grade
+SELECT c.classroom_name, AVG(s.grade) AS average_grade
+FROM Students s
+JOIN Classrooms c ON s.classroom_id = c.classroom_id
+GROUP BY c.classroom_name;
+
+-- Find the names of students who belong to a classroom taught by a specific teacher (you can choose a teacher_id)
+SELECT s.first_name, s.last_name
+FROM Students s
+JOIN Classrooms c ON s.classroom_id = c.classroom_id
+WHERE c.teacher_id = 2;
+
+-- List all classrooms along with the number of students in each classroom
+SELECT c.classroom_name, COUNT(s.student_id) AS num_students
+FROM Classrooms c
+LEFT JOIN Students s ON c.classroom_id = s.classroom_id
+GROUP BY c.classroom_name;
+
+-- Show the details of classrooms that have an average grade above a certain value (you can choose a specific grade)
+SELECT c.classroom_name, AVG(s.grade) AS average_grade
+FROM Students s
+JOIN Classrooms c ON s.classroom_id = c.classroom_id
+GROUP BY c.classroom_name
+HAVING AVG(s.grade) > 10;
